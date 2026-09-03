@@ -543,6 +543,8 @@ body.shot .page::after{opacity:.04}
           <li>이름과 사이즈를 한 줄에 나란히</li>
           <li>‘속성 : · 그 외 : · 본진 :’ 은 선택지 아래 줄로 내림 (비어 있으면 저장할 때 빠짐)</li>
           <li>패치노트는 📖 버튼으로, 옆에 버그 제보 · 건의 창구 ✉️ 추가</li>
+          <li>백업 불러오기 · 전부 지우기가 새로고침 뒤 되돌아오던 것 고침</li>
+          <li>저장한 이미지에 빈 칸의 안내 문구가 같이 찍히던 것 고침</li>
         </ul>
       </div>
       <div class="logitem"><b>v1.1</b>
@@ -764,6 +766,7 @@ function load(){
 }
 
 var saveTimer = null;
+var leaving = false;   // 새로고침으로 내용을 갈아끼우는 중
 function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(commit, 350); }
 function commit(){
   try{
@@ -1801,7 +1804,7 @@ document.getElementById("jsonPicker").addEventListener("change", function(e){
   if(!f) return;
   var fr = new FileReader();
   fr.onload = function(){
-    try{ localStorage.setItem(KEY, JSON.stringify(JSON.parse(fr.result))); location.reload(); }
+    try{ localStorage.setItem(KEY, JSON.stringify(JSON.parse(fr.result))); leaving = true; location.reload(); }
     catch(err){ toast("백업 파일 형식이 올바르지 않습니다."); }
   };
   fr.readAsText(f);
@@ -1809,6 +1812,7 @@ document.getElementById("jsonPicker").addEventListener("change", function(e){
 document.getElementById("resetBtn").addEventListener("click", function(){
   if(confirm("작성한 내용과 사진을 모두 지웁니다. 계속할까요?")){
     [KEY,OLD2,OLD1].forEach(function(k){ localStorage.removeItem(k); });
+    leaving = true;
     location.reload();
   }
 });
@@ -1909,6 +1913,8 @@ function toast(msg){
 
 window.addEventListener("beforeunload", function(){
   clearTimeout(saveTimer);
+  // 불러오기·전부 지우기로 새로고침할 때는 옛 내용을 다시 쓰지 않는다
+  if(leaving) return;
   try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
 });
 })();
