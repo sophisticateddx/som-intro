@@ -103,6 +103,8 @@ body[data-side="off"] .ehead{justify-content:center;padding:10px 0}
 .ebtn.primary:hover{background:#000;color:#fff}
 .ebtn.danger:hover{background:rgba(229,72,77,.12);color:#E5484D}
 .ebtn.mini{flex:0 0 auto;padding:7px 11px}
+.ibtn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.7);border-radius:50%;font-size:17px;line-height:1;cursor:pointer;text-decoration:none;font-family:inherit;transition:background .15s ease,transform .12s ease}
+.ibtn:hover{background:#fff;transform:translateY(-1px)}
 .seg2{display:flex;background:rgba(0,0,0,.045);border-radius:999px;padding:3px;gap:2px}
 .seg2 button{flex:1;border:0;background:transparent;padding:6px 4px;border-radius:999px;font-size:12px;font-weight:700;color:var(--sub);cursor:pointer}
 .seg2 button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(20,20,40,.16)}
@@ -224,7 +226,7 @@ body[data-side="off"] .ehead{justify-content:center;padding:10px 0}
 .qrow .opt:hover{background:var(--shade);color:var(--ink-2)}
 .qrow .opt.on{background:var(--accent-soft);color:var(--accent-deep);font-weight:700}
 .qrow .sep{color:var(--line);font-style:normal;margin:0 1px}
-.qrow .etc{color:var(--ink-2);font-size:12.5px}
+.qrow .etc{display:block;margin-top:2px;color:var(--ink-2);font-size:12.5px}
 .qrow .etc .tf{color:var(--ink-2);font-size:12.5px}
 
 .notebox{background:var(--shade);border-radius:12px;padding:13px 14px;margin-top:14px}
@@ -315,12 +317,12 @@ body[data-side="off"] .ehead{justify-content:center;padding:10px 0}
 .ltitle{font-size:24px;font-weight:700}
 .count{font-size:12.5px;color:var(--sub)}
 .dolls{margin-top:16px}
-.dcap{padding:8px 2px 0;text-align:center}
-.dcap input{display:block;width:100%;border:0;outline:none;background:transparent;text-align:center;color:var(--ink);border-radius:6px;padding:2px 4px}
+.dcap{padding:8px 2px 0;text-align:center;display:flex;align-items:baseline;justify-content:center;gap:7px;flex-wrap:wrap}
+.dcap input{display:block;width:auto;max-width:100%;min-width:0;border:0;outline:none;background:transparent;text-align:center;color:var(--ink);border-radius:6px;padding:2px 4px}
 .dcap input:hover{background:var(--shade)}
 .dcap input:focus{background:#fff;box-shadow:inset 0 0 0 1px var(--accent)}
 .dcap input.nm{font-size:15px;font-weight:700}
-.dcap input.sz{font-size:12px;color:var(--sub);margin-top:1px}
+.dcap input.sz{font-size:12px;color:var(--sub)}
 
 .hint{margin:12px 12px 0;font-size:11px;color:var(--sub);line-height:1.7}
 #pg-list .hint{margin:12px 4px 0}
@@ -347,9 +349,9 @@ body.shot .dcap{padding-bottom:6px}
 body.shot .dcap input{background:transparent;box-shadow:none}
 body.shot .dcap input:placeholder-shown{display:none}
 /* 저장할 때 이름·사이즈는 input 대신 글줄로 바꿔 그린다 (아래가 잘리지 않게) */
-body.shot .dcap .capline{display:block;width:100%;text-align:center;padding:2px 4px;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+body.shot .dcap .capline{display:block;width:auto;max-width:100%;text-align:center;padding:2px 0;color:var(--ink);white-space:pre-wrap;word-break:break-word}
 body.shot .dcap .capline.nm{font-size:15px;font-weight:700;line-height:1.5}
-body.shot .dcap .capline.sz{font-size:12px;color:var(--sub);line-height:1.6;margin-top:1px;padding-bottom:3px}
+body.shot .dcap .capline.sz{font-size:12px;color:var(--sub);line-height:1.6;padding-bottom:3px}
 body.shot .frame{border-color:rgba(0,0,0,.07)}
 body.shot .win{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}
 body.shot .page::after{opacity:.04}
@@ -374,8 +376,11 @@ body.shot .page::after{opacity:.04}
       <div class="ebody">
 
         <div class="grp">
-          <h4>패치노트</h4>
-          <div class="row"><button class="ebtn" id="logOpen">패치노트 열기</button></div>
+          <h4>패치노트 · 창구</h4>
+          <div class="row">
+            <button class="ibtn" id="logOpen" title="패치노트" aria-label="패치노트">📖</button>
+            <a class="ibtn" id="formLink" href="https://forms.gle/NYCpvQFB22vnCsoVA" target="_blank" rel="noopener noreferrer" title="버그 제보 · 건의" aria-label="버그 제보 및 건의 창구">✉️</a>
+          </div>
         </div>
 
         <div class="grp">
@@ -533,6 +538,13 @@ body.shot .page::after{opacity:.04}
     <button class="close-x" id="logClose" aria-label="닫기">✕</button>
     <h3>패치노트</h3>
     <div class="log">
+      <div class="logitem"><b>v1.2</b>
+        <ul>
+          <li>이름과 사이즈를 한 줄에 나란히</li>
+          <li>‘속성 : · 그 외 : · 본진 :’ 은 선택지 아래 줄로 내림 (비어 있으면 저장할 때 빠짐)</li>
+          <li>패치노트는 📖 버튼으로, 옆에 버그 제보 · 건의 창구 ✉️ 추가</li>
+        </ul>
+      </div>
       <div class="logitem"><b>v1.1</b>
         <ul>
           <li>프리셋 저장 — 지금 상태를 이름 붙여 브라우저에 담아두고 언제든 불러오기</li>
@@ -892,7 +904,7 @@ function renderRows(){
     if(G.etc){
       var etc = document.createElement("span");
       etc.className = "etc";
-      etc.appendChild(document.createTextNode(" " + G.etcLabel + " "));
+      etc.appendChild(document.createTextNode(G.etcLabel + " "));
       var tf = document.createElement("span");
       tf.className = "tf inl"; tf.dataset.k = "card." + G.etc; tf.dataset.ph = "…";
       tf.textContent = S.card[G.etc] || "";
@@ -951,6 +963,30 @@ function paintTexts(){
     if(el !== document.activeElement && readText(el) !== v) el.textContent = v;
     el.setAttribute("contenteditable","true");
   });
+}
+
+/* 이름·사이즈를 한 줄에 두려면 칸 너비를 글자에 맞춰야 한다 */
+var measSpan = null;
+function fitCap(i){
+  if(!i || !i.parentNode) return;
+  if(!measSpan){
+    measSpan = document.createElement("span");
+    measSpan.setAttribute("aria-hidden","true");
+    measSpan.style.cssText = "position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden;pointer-events:none";
+    document.body.appendChild(measSpan);
+  }
+  var cs = window.getComputedStyle(i);
+  measSpan.style.fontFamily = cs.fontFamily;
+  measSpan.style.fontSize = cs.fontSize;
+  measSpan.style.fontWeight = cs.fontWeight;
+  measSpan.style.fontStyle = cs.fontStyle;
+  measSpan.style.letterSpacing = cs.letterSpacing;
+  measSpan.textContent = i.value || i.placeholder || "";
+  var w = measSpan.getBoundingClientRect().width + 14;
+  i.style.width = Math.max(30, Math.ceil(w)) + "px";
+}
+function fitCaps(root){
+  $$(".dcap input", root || document).forEach(fitCap);
 }
 
 function cellEl(c, opt){
@@ -1044,12 +1080,14 @@ function renderGallery(){
     box.appendChild(items);
     wrap.appendChild(box);
   });
+  fitCaps(wrap);
 }
 function renderListGrid(){
   var g = document.getElementById("listGrid");
   g.innerHTML = "";
   g.style.gridTemplateColumns = "repeat(" + S.list.cols + ",1fr)";
   S.list.items.forEach(function(c){ g.appendChild(cellEl(c, {ratio:S.list.ratio, kind:"doll"})); });
+  fitCaps(g);
   updateCount();
 }
 function updateCount(){
@@ -1186,6 +1224,7 @@ function inspFields(box, c, fields){
       c[f[0]] = i.value; save();
       var live = $('[data-cellf="' + c.id + "." + f[0] + '"]');
       if(live && live.value !== i.value) live.value = i.value;
+      if(live) fitCap(live);
       var live2 = $('[data-cellk="' + c.id + "." + f[0] + '"]');
       if(live2 && readText(live2) !== i.value) live2.textContent = i.value;
       markBlank(c); updateCount();
@@ -1509,7 +1548,7 @@ document.addEventListener("input", function(e){
   if(el.dataset && el.dataset.cellf){
     var q = el.dataset.cellf.split("."), l2 = where(q[0]);
     if(l2){
-      l2.item[q[1]] = el.value; save(); markBlank(l2.item); updateCount();
+      l2.item[q[1]] = el.value; save(); markBlank(l2.item); updateCount(); fitCap(el);
       var mirror = $('#insp input[data-f="' + q[1] + '"]');
       if(mirror && selId === q[0] && mirror.value !== el.value) mirror.value = el.value;
     }
@@ -1601,6 +1640,7 @@ function setFont(f){
   $$("#fontSeg button").forEach(function(b){ b.classList.toggle("on", b.dataset.font === f); });
   save();
   repaintPhotos();
+  fitCaps();
 }
 $$("#fontSeg button").forEach(function(b){
   b.addEventListener("click", function(){ setFont(b.dataset.font); });
@@ -1797,6 +1837,11 @@ function exportPNG(withBg){
         scale:2, backgroundColor: withBg ? null : "#ffffff", useCORS:true, logging:false,
         onclone: function(doc){
           doc.body.classList.add("shot");
+          // 비어 있는 "속성:·그 외:·본진:" 줄은 저장할 때 뺀다
+          Array.prototype.forEach.call(doc.querySelectorAll(".qrow .etc"), function(sp){
+            var f = sp.querySelector(".tf");
+            if(!f || !(f.textContent || "").trim()) sp.classList.add("empty");
+          });
           // input 은 캡처할 때 글자 아래가 잘린다 → 같은 모양의 글줄로 바꿔 그린다
           Array.prototype.forEach.call(doc.querySelectorAll(".dcap input[data-cellf]"), function(inp){
             var q = (inp.getAttribute("data-cellf") || "").split(".");
@@ -1853,6 +1898,8 @@ function toast(msg){
   setTab(S.tab === "list" ? "list" : "card");
   setSide(S.side === "off" ? "off" : "on");
   window.addEventListener("resize", repaintPhotos);
+  // 웹폰트가 늦게 오면 이름·사이즈 칸 너비를 다시 맞춘다
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fitCaps(); });
 })();
 
 window.addEventListener("beforeunload", function(){
