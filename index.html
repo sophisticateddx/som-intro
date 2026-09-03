@@ -113,6 +113,17 @@ body[data-side="off"] .ehead{justify-content:center;padding:10px 0}
 .presets{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .presets button{width:100%;aspect-ratio:1/1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.1);cursor:pointer;padding:0}
 .presets button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.slots{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.slots .none{font-size:11.5px;color:var(--sub);line-height:1.7;background:rgba(0,0,0,.035);border-radius:var(--r-md);padding:11px}
+.slot{display:flex;align-items:center;gap:4px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.7);border-radius:var(--r-md);padding:7px 8px}
+.slot .info{flex:1;min-width:0;cursor:text}
+.slot .snm{font-size:12.5px;font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot .sat{font-size:10.5px;color:var(--sub);margin-top:1px}
+.slot .sb{flex:0 0 auto;border:0;background:transparent;color:var(--sub);font-size:11.5px;font-weight:600;padding:5px 7px;border-radius:8px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.slot .sb:hover{background:var(--shade);color:var(--ink-2)}
+.slot .sb.load{color:var(--accent-deep);background:var(--accent-soft)}
+.slot .sb.load:hover{color:var(--accent-deep);background:var(--accent-soft);filter:brightness(.96)}
+.slot .sb.del:hover{background:rgba(229,72,77,.12);color:#E5484D}
 .insp .none{font-size:12px;color:var(--sub);line-height:1.7;background:rgba(0,0,0,.035);border-radius:var(--r-md);padding:12px}
 .pv{width:100%;height:92px;border-radius:var(--r-md);border:1px solid rgba(0,0,0,.07);background:var(--shade) center/cover no-repeat;margin-bottom:9px}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px}
@@ -332,8 +343,13 @@ body.shot .tf:empty,
 body.shot .tagbtn[data-t=""]{display:none}
 body.shot .tf{background:transparent;box-shadow:none}
 body.shot .cell.sel > .frame{box-shadow:none}
+body.shot .dcap{padding-bottom:6px}
 body.shot .dcap input{background:transparent;box-shadow:none}
 body.shot .dcap input:placeholder-shown{display:none}
+/* 저장할 때 이름·사이즈는 input 대신 글줄로 바꿔 그린다 (아래가 잘리지 않게) */
+body.shot .dcap .capline{display:block;width:100%;text-align:center;padding:2px 4px;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+body.shot .dcap .capline.nm{font-size:15px;font-weight:700;line-height:1.5}
+body.shot .dcap .capline.sz{font-size:12px;color:var(--sub);line-height:1.6;margin-top:1px;padding-bottom:3px}
 body.shot .frame{border-color:rgba(0,0,0,.07)}
 body.shot .win{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}
 body.shot .page::after{opacity:.04}
@@ -411,6 +427,12 @@ body.shot .page::after{opacity:.04}
         </div>
 
         <div class="grp">
+          <h4>프리셋 <span style="font-weight:600;text-transform:none;letter-spacing:0">(이 브라우저에 저장)</span></h4>
+          <div class="row"><button class="ebtn primary" id="slotSave">지금 상태 저장</button></div>
+          <div class="slots" id="slots"></div>
+        </div>
+
+        <div class="grp">
           <h4>데이터</h4>
           <div class="row">
             <button class="ebtn" id="jsonOut">백업</button>
@@ -429,6 +451,8 @@ body.shot .page::after{opacity:.04}
             <li>섹션 제목에 마우스를 올리면 칸 추가·삭제가 나옵니다</li>
             <li>사진 왼쪽 위를 누르면 MAIN·WISH·AIR를 답니다</li>
             <li>점선·빈칸은 이미지로 저장할 때 빠집니다</li>
+            <li>왼쪽 칸의 글은 <b>엔터</b>로 줄을 바꿉니다</li>
+            <li>프리셋은 이 브라우저에 남습니다 (전부 지우기를 해도 남아요)</li>
           </ul>
         </div>
 
@@ -509,6 +533,13 @@ body.shot .page::after{opacity:.04}
     <button class="close-x" id="logClose" aria-label="닫기">✕</button>
     <h3>패치노트</h3>
     <div class="log">
+      <div class="logitem"><b>v1.1</b>
+        <ul>
+          <li>프리셋 저장 — 지금 상태를 이름 붙여 브라우저에 담아두고 언제든 불러오기</li>
+          <li>이미지로 저장할 때 이름·사이즈 글자 아래가 잘리던 것 고침 (두 장 모두)</li>
+          <li>왼쪽 칸의 닉네임·아이디·‘그 외’ 칸도 엔터로 줄바꿈</li>
+        </ul>
+      </div>
       <div class="logitem"><b>v1.0 · 첫 배포</b>
         <ul>
           <li>트친소 · 보유 솜 목록 두 장을 한 파일에서 작성</li>
@@ -1485,8 +1516,16 @@ document.addEventListener("input", function(e){
   }
 });
 document.addEventListener("keydown", function(e){
-  var one = e.target.closest && e.target.closest(".nick,.handle,.gt,.tf.inl");
-  if(one && e.key === "Enter"){ e.preventDefault(); one.blur(); }
+  if(e.key !== "Enter") return;
+  // 섹션 제목은 한 줄로 둔다
+  var one = e.target.closest && e.target.closest(".gt");
+  if(one){ e.preventDefault(); one.blur(); return; }
+  // 왼쪽 칸에서 직접 쓰는 글은 엔터로 줄을 바꾼다
+  var multi = e.target.closest && e.target.closest(".nick,.handle,.tf.inl");
+  if(multi && !e.isComposing){
+    e.preventDefault();
+    document.execCommand("insertText", false, "\n");
+  }
 });
 document.addEventListener("focusin", function(e){
   var f = e.target.closest && e.target.closest(".cell");
@@ -1598,6 +1637,111 @@ $$("#boxSeg button").forEach(function(b){
   });
 })();
 
+/* ---------- 프리셋 (이 브라우저에 저장) ---------- */
+var PKEY = "som-intro-slots-v1";
+function slotsLoad(){
+  try{
+    var raw = localStorage.getItem(PKEY);
+    var a = raw ? JSON.parse(raw) : [];
+    return Array.isArray(a) ? a : [];
+  }catch(e){ return []; }
+}
+function slotsWrite(list){
+  try{ localStorage.setItem(PKEY, JSON.stringify(list)); return true; }
+  catch(e){ toast("저장 공간이 가득 찼습니다. 오래된 프리셋을 지우거나 사진 수를 줄여주세요."); return false; }
+}
+function snapshot(){ return JSON.parse(JSON.stringify(S)); }
+function slotStamp(){
+  var d = new Date(), p = function(n){ return String(n).padStart(2,"0"); };
+  return d.getFullYear() + "." + p(d.getMonth()+1) + "." + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function applyState(d){
+  S = normalize(d);
+  selId = null;
+  applyTone();
+  setFont(S.font === "batang" ? "batang" : "suit");
+  applyBoxes();
+  renderRows();
+  paintPills();
+  paintTexts();
+  renderAll();
+  setTab(S.tab === "list" ? "list" : "card");
+  commit();
+  repaintPhotos();
+}
+function findSlot(list, id){
+  return list.filter(function(x){ return x.id === id; })[0] || null;
+}
+function renderSlots(){
+  var wrap = document.getElementById("slots");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+  var list = slotsLoad();
+  if(!list.length){
+    var n = document.createElement("div");
+    n.className = "none";
+    n.textContent = "저장한 프리셋이 없습니다. 지금 상태를 저장해두면 언제든 그대로 되돌릴 수 있습니다.";
+    wrap.appendChild(n);
+    return;
+  }
+  list.forEach(function(p){
+    var row = document.createElement("div");
+    row.className = "slot";
+
+    var info = document.createElement("div");
+    info.className = "info"; info.title = "눌러서 이름 바꾸기";
+    var nm = document.createElement("div"); nm.className = "snm"; nm.textContent = p.name;
+    var at = document.createElement("div"); at.className = "sat"; at.textContent = p.at || "";
+    info.appendChild(nm); info.appendChild(at);
+    info.addEventListener("click", function(){
+      var v = prompt("프리셋 이름", p.name);
+      if(v === null) return;
+      v = v.trim();
+      if(!v) return;
+      var l = slotsLoad(), t = findSlot(l, p.id);
+      if(t){ t.name = v; if(slotsWrite(l)) renderSlots(); }
+    });
+    row.appendChild(info);
+
+    [
+      ["불러오기","load", function(){
+        if(!confirm("‘" + p.name + "’을 불러옵니다. 지금 화면의 내용은 사라집니다. 계속할까요?")) return;
+        var t = findSlot(slotsLoad(), p.id);
+        if(!t){ toast("프리셋을 찾지 못했습니다."); renderSlots(); return; }
+        applyState(JSON.parse(JSON.stringify(t.data)));
+        toast("‘" + t.name + "’을 불러왔습니다.");
+      }],
+      ["덮어쓰기","over", function(){
+        if(!confirm("‘" + p.name + "’을 지금 상태로 덮어씁니다. 계속할까요?")) return;
+        var l = slotsLoad(), t = findSlot(l, p.id);
+        if(!t){ renderSlots(); return; }
+        t.data = snapshot(); t.at = slotStamp();
+        if(slotsWrite(l)){ renderSlots(); toast("‘" + t.name + "’을 덮어썼습니다."); }
+      }],
+      ["✕","del", function(){
+        if(!confirm("‘" + p.name + "’을 지웁니다. 계속할까요?")) return;
+        var l = slotsLoad().filter(function(x){ return x.id !== p.id; });
+        if(slotsWrite(l)){ renderSlots(); toast("프리셋을 지웠습니다."); }
+      }]
+    ].forEach(function(b){
+      var el = document.createElement("button");
+      el.type = "button"; el.className = "sb " + b[1]; el.textContent = b[0];
+      if(b[1] === "del") el.title = "프리셋 지우기";
+      el.addEventListener("click", b[2]);
+      row.appendChild(el);
+    });
+    wrap.appendChild(row);
+  });
+}
+document.getElementById("slotSave").addEventListener("click", function(){
+  var list = slotsLoad();
+  var name = prompt("프리셋 이름", "프리셋 " + (list.length + 1));
+  if(name === null) return;
+  name = name.trim() || ("프리셋 " + (list.length + 1));
+  list.unshift({id:uid(), name:name, at:slotStamp(), data:snapshot()});
+  if(slotsWrite(list)){ renderSlots(); toast("‘" + name + "’으로 저장했습니다."); }
+});
+
 /* ---------- 데이터 ---------- */
 function stamp(){
   var d = new Date(), p = function(n){ return String(n).padStart(2,"0"); };
@@ -1653,6 +1797,18 @@ function exportPNG(withBg){
         scale:2, backgroundColor: withBg ? null : "#ffffff", useCORS:true, logging:false,
         onclone: function(doc){
           doc.body.classList.add("shot");
+          // input 은 캡처할 때 글자 아래가 잘린다 → 같은 모양의 글줄로 바꿔 그린다
+          Array.prototype.forEach.call(doc.querySelectorAll(".dcap input[data-cellf]"), function(inp){
+            var q = (inp.getAttribute("data-cellf") || "").split(".");
+            var l = where(q[0]);
+            var v = l ? (l.item[q[1]] || "") : (inp.value || "");
+            v = String(v).trim();
+            if(!v){ if(inp.parentNode) inp.parentNode.removeChild(inp); return; }
+            var line = doc.createElement("div");
+            line.className = "capline " + (inp.classList.contains("nm") ? "nm" : "sz");
+            line.textContent = v;
+            inp.parentNode.replaceChild(line, inp);
+          });
           Array.prototype.forEach.call(doc.querySelectorAll(".qgrp"), function(q){
             var hasChip = q.querySelector(".chip.on");
             var hasText = Array.prototype.some.call(q.querySelectorAll(".tf"), function(x){ return (x.textContent||"").trim(); });
@@ -1693,6 +1849,7 @@ function toast(msg){
   paintPills();
   paintTexts();
   renderAll();
+  renderSlots();
   setTab(S.tab === "list" ? "list" : "card");
   setSide(S.side === "off" ? "off" : "on");
   window.addEventListener("resize", repaintPhotos);
